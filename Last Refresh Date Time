@@ -1,0 +1,24 @@
+let
+    // Obtiene la fecha y hora actual en UTC
+    CurrentUTCDateTime = DateTimeZone.UtcNow(),
+
+    // Conversión a diferentes zonas horarias
+    MexicoTime = DateTimeZone.SwitchZone(CurrentUTCDateTime, -6), // Ciudad de México
+    ESTime = DateTimeZone.SwitchZone(CurrentUTCDateTime, 1), // España Peninsular
+    CITime = DateTimeZone.SwitchZone(CurrentUTCDateTime, 0), // Islas Canarias
+    VenezuelaTime = DateTimeZone.SwitchZone(CurrentUTCDateTime, -4), // Venezuela
+    ArgentinaTime = DateTimeZone.SwitchZone(CurrentUTCDateTime, -3), // Argentina
+
+    // Crear una tabla con la fecha y hora actual
+    Source = #table(1, {{CurrentUTCDateTime}}),
+    RenamedColumns = Table.RenameColumns(Source,{{"Column1", "UTC Time"}}),
+
+    // Añadir columnas para cada zona horaria
+    AddMexicoTime = Table.AddColumn(RenamedColumns, "Mexico Time", each MexicoTime, type datetime),
+    AddESTime = Table.AddColumn(AddMexicoTime, "España Time", each ESTime, type datetime),
+    AddCITime = Table.AddColumn(AddESTime, "Islas Canarias Time", each CITime, type datetime),
+    AddVenezuelaTime = Table.AddColumn(AddCITime, "Venezuela Time", each VenezuelaTime, type datetime),
+    AddArgentinaTime = Table.AddColumn(AddVenezuelaTime, "Argentina Time", each ArgentinaTime, type datetime),
+    #"Columna de anulación de dinamización" = Table.UnpivotOtherColumns(AddArgentinaTime, {}, "Last Refresh Date Time", "Valor")
+in
+    #"Columna de anulación de dinamización"
